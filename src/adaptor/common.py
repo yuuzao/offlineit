@@ -1,7 +1,7 @@
 from yarl import URL
 import httpx
 import time
-from typing import List, Dict
+from typing import List, Dict, Union
 from loguru import logger
 
 from src.utils import header
@@ -21,10 +21,9 @@ class Common:
         return articles
 
     def run(self) -> List[Dict[str, str]]:
-        page_url = self.url.join(URL('default.html'))
-        total_pages = self.max_pages(page_url, self.client)
+        total_pages = self.max_pages(self.client)
 
-        pages = self.assemble_page_url(page_url, total_pages)
+        pages = self.assemble_page_url(total_pages)
         post_urls = [self.fetch_post_urls(p) for p in pages][0]
 
         logger.info(f'obtained {len(post_urls)} post urls in total')
@@ -37,13 +36,13 @@ class Common:
 
         return articles
 
-    def max_pages(self, page_url: URL, client: httpx.Client() = None) -> int:
+    def max_pages(self, client: httpx.Client() = None) -> int:
         return 0
 
     def fetch_post_urls(self, page: URL, client: httpx.Client() = None) -> List[URL]:
         return []
 
-    def parse_article(self, post_url: URL, client: httpx.Client = None) -> Dict[str, str]:
+    def parse_article(self, post_url: URL, client: httpx.Client = None) -> Union[Dict[str, str], any]:
         return []
 
     @staticmethod
@@ -56,5 +55,5 @@ class Common:
         return res
 
     @staticmethod
-    def assemble_page_url(base_url: URL, max_page: int) -> List[URL]:
+    def assemble_page_url(max_page: int) -> List[URL]:
         return []

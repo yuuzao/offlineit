@@ -12,8 +12,11 @@ class Cnblogs(Common):
     def __init__(self, url):
         super(Cnblogs, self).__init__(url)
         self.url = self.adjust_url()
+        logger.debug(f'self.url is changed to {self.url}')
 
-    def max_pages(self, page_url: URL, client: httpx.Client() = None) -> int:
+    def max_pages(self, client: httpx.Client() = None) -> int:
+        page_url = self.url.build(scheme='https', host=self.url.host, path=f'{self.url.path}/default.html')
+
         cli = client if client is not None else self.client
         # in order to detect the max page number, it has to begin at page 2.
         p_url = page_url.with_query('page=2')
@@ -54,16 +57,14 @@ class Cnblogs(Common):
         raw_content = html.xpath('//*[@id="cnblogs_post_body"]')[0]
         post_content = etree.tostring(raw_content, encoding='unicode')
 
-        raw_date = html.xpath('//*[@id="post-date"]')[0].text
-        post_date = parse_date(raw_date)
+        post_date = html.xpath('//*[@id="post-date"]')[0].text
 
         article = {"title": post_title, "article": post_content, "date": post_date}
         logger.info(f'article parsed: [{post_title}]')
         return article
 
-    @staticmethod
-    def assemble_page_url(base_url: URL, max_page: int) -> List[URL]:
-        pages = [base_url.with_query(f'page={i}') for i in range(1, max_page + 1)]
+    def assemble_page_url(self, max_page: int) -> List[URL]:
+        pages = [self.url.with_query(f'page={i}') for i in range(1, max_page + 1)]
 
         return pages
 
@@ -75,6 +76,6 @@ class Cnblogs(Common):
         # the first part of the url's path, which represents the blog's id
         path = self.url.parts[1]
 
-        new_url = self.url.build(scheme=scheme, host=host, path=path)
+        new_url = self.url.build(scheme=scheme, host=host).with_path(path)
         logger.debug(f"blog's url is {new_url}")
         return new_url
