@@ -21,14 +21,6 @@ def header(url: URL, extra: Dict = None) -> Dict:
     return headers
 
 
-def convert(host: URL, raw_html: str):
-    """
-    convert image links to local resources.
-    """
-    html = etree.fromstring(raw_html)
-    # note: some links may be relative.
-
-
 def verify_dir(dir_path: Path):
     if not dir_path.exists():
         logger.info(f'creating directory at [{dir_path}] with permission [777]')

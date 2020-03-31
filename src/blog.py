@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Dict, Union
 
 from src.adaptor import parser
-from src.utils import convert
+from src.converter import Converter
 
 
 class Blog:
@@ -16,27 +16,35 @@ class Blog:
         self.saver = self._extend_saver(base_dir=saver, ex_dir=self.url)
         logger.debug(f'storage directory is [{self.saver}]')
 
-    def content(self, save=True):
+    def content(self) -> List[Path]:
         pr = parser.Parser(self.url)
         contents = pr.parse()
 
-        if save is True:
-            self._save(contents)
-            logger.info(f"saved [{len(contents)}] posts, exiting...")
+        files = self._save(contents)
+        logger.info(f"saved [{len(contents)}] posts, exiting...")
 
-        return contents
+        return files
 
-    def localize(self, raw_html):
-        convert(self.url, raw_html)
+    def localize(self, entries: List[Path]):
+        for entry in entries:
+            logger.info(f"localizing [{entry}]...")
+            converter = Converter(self.url, entry)
+            converter.localize_img()
+        logger.info("localize finished")
 
-    def _save(self, contents: List[Dict[str, str]]):
+    def _save(self, contents: List[Dict[str, str]]) -> List[Path]:
+        files = []
         for post in contents:
             title = post['title']
             file_name = self._extend_saver(base_dir=self.saver, ex_dir=title).joinpath(f'{title}.json')
+            files.append(file_name)
+
             logger.info(f'saving post [{title}] to [{self.saver}]')
 
             with open(str(file_name), 'w') as f:
                 f.write(json.dumps(post))
+
+        return files
 
     @staticmethod
     def _extend_saver(base_dir: Path, ex_dir: Union[str, any]) -> Path:
