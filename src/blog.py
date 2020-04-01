@@ -25,14 +25,25 @@ class Blog:
 
         return files
 
-    def localize(self, entries: List[Path]):
-        for entry in entries:
-            logger.info(f"localizing [{entry}]...")
-            converter = Converter(self.url, entry)
+    def localize(self, paths: List[Path]):
+        """
+        download images to local directory and then convert the urls of the 'src' attribute to relative local paths
+        :param paths:
+        """
+        for p in paths:
+            logger.info(f"localizing [{p}]...")
+            converter = Converter(self.url, p)
             converter.localize_img()
         logger.info("localize finished")
 
     def _save(self, contents: List[Dict[str, str]]) -> List[Path]:
+        """
+        to save every post in the contents into an individual directory.
+        :param contents: a list consists of dicts which keys are ['title', 'post', 'date']
+        :return: a list of the directories' paths.
+        """
+
+        # this stores the paths
         files = []
         for post in contents:
             title = post['title']
