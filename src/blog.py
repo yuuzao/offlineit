@@ -21,6 +21,9 @@ class Blog:
         contents = pr.parse()
 
         files = self._save(contents)
+
+        self.localize(files)
+
         logger.info(f"saved [{len(contents)}] posts, exiting...")
 
         return files
